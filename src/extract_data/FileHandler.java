@@ -84,7 +84,7 @@ public class FileHandler implements FileHandlerInterface{
 	}
 	
 	public HashMap<Integer, String> readClientFile(String clientId) {
-		String filePath = System.getProperty("user.dir") + "\\ClientResources\\";
+		String filePath = System.getProperty("user.dir") + "/ClientResources/";
 		String name = filePath.concat(clientId);
 		int lineIndex = 0;
 		try{

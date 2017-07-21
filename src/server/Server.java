@@ -1,6 +1,5 @@
 package server;
 
-import java.rmi.Remote;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
@@ -10,10 +9,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Scanner;
-import java.util.logging.Logger;
 
-import client.Client;
-import client.ClientInterface;
 import extract_data.FileHandler;
 import extract_data.FileHandlerInterface;
 import stock_data.ClientStock;
@@ -26,12 +22,13 @@ public class Server implements ServerInterface{
 	private ArrayList<String> clientsList = new ArrayList<String>();
 	private volatile HashMap<Integer, String> stocks;
 	//	private HashMap<String, String> stocks_by_index;
-
+	private Logger logger = Logger.getInstance();
 	public Server(FileHandlerInterface filehandler){
 		this.filehandler = filehandler;
 		ArrayList<String> list = filehandler.getAllFileNames("ClientResources");
 		System.out.println(list);
-		stocks = LoadStocksFromCSV();	
+		stocks = LoadStocksFromCSV();
+		logger.addLog("Log--Server--Constructor called");
 	}
 	
 	private synchronized void hashReplace(int stock_index, String stock_string){
@@ -43,6 +40,7 @@ public class Server implements ServerInterface{
 			return false;
 		}else{
 			clientsList.add(clientID);
+			logger.addLog("Log--Server--addClient-id-"+clientID);
 			return true;
 		}
 	}
@@ -143,6 +141,7 @@ public class Server implements ServerInterface{
 			changeClientVolume(clientId, stockIndex, volume, 0);
 			changePrice(findStockByIndex(stocks, stockIndex), volume, 0);
 			System.out.println("buy successfull");
+			logger.addLog("Log--Server--processRequestBuy--cliendId-" + clientId + "-stockIndex-"+stockIndex + "-volume-" + volume);
 			return true;
 		}
 		System.out.println("client unrecognized");
@@ -156,6 +155,8 @@ public class Server implements ServerInterface{
 			//0 is for buy, 1 is for sell
 			changeClientVolume(clientId, stockIndex, volume, 1);
 			changePrice(findStockByIndex(stocks, stockIndex), volume, 1);
+			logger.addLog("Log--Server--processRequestSell--cliendId-" + clientId + "-stockIndex-"+stockIndex + "-volume-" + volume);
+
 			return true;
 		}
 		return false;
@@ -186,6 +187,8 @@ public class Server implements ServerInterface{
 		//0 is for buy, 1 is for sell
 		changeClientVolume(clientId, stockIndex, volume, 0);
 		changePrice(findStockByIndex(stocks, stockIndex), volume, 0);
+		logger.addLog("Log--Server--processRequestCustomBuy--cliendId-" + clientId + "-stockIndex-"+stockIndex + "-volume-" + volume + "-price-" + price);
+
 		return true;
 	}
 
@@ -214,7 +217,8 @@ public class Server implements ServerInterface{
 		//0 is for buy, 1 is for sell
 		changeClientVolume(clientId, stockIndex, volume, 1);
 		changePrice(findStockByIndex(stocks, stockIndex), volume, 1);
-		
+		logger.addLog("Log--Server--processRequestCustomSell--cliendId-" + clientId + "-stockIndex-"+stockIndex + "-volume-" + volume + "-price-" + price);
+
 		return true;
 	}
 
@@ -241,7 +245,8 @@ public class Server implements ServerInterface{
 		//0 is for buy, 1 is for sell
 		changeClientVolume(clientId, stockIndex, volume, 1);
 		changePrice(findStockByIndex(stocks, stockIndex), volume, 1);
-		
+		logger.addLog("Log--Server--processCancelCustomBuy--cliendId-" + clientId + "-stockIndex-"+stockIndex + "-volume-" + volume + "-price-" + price);
+
 		return true;
 	}
 
@@ -268,7 +273,8 @@ public class Server implements ServerInterface{
 		//0 is for buy, 1 is for sell
 		changeClientVolume(clientId, stockIndex, volume, 1);
 		changePrice(findStockByIndex(stocks, stockIndex), volume, 1);
-		
+		logger.addLog("Log--Server--processCancelCustomSell--cliendId-" + clientId + "-stockIndex-"+stockIndex + "-volume-" + volume + "-price-" + price);
+
 		return true;
 	}
 
@@ -329,6 +335,7 @@ public class Server implements ServerInterface{
 	}
 
 	public static void main(String args[]){
+//		System.setProperty("java.rmi.server.hostname","192.168.1.2");
 		Scanner scanner = new Scanner(System.in);
 		String filePath = System.getProperty("user.dir") + "/Resources/";
 		String fileName = "20161015.csv";
